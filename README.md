@@ -2,7 +2,7 @@
 
 OBS2Vagrant is a simple web service that makes possible to turn a
 [Open Build Service](http://openbuildservice.org/) into a simple
-[Vagrant](https://www.vagrantup.com/) (like [HashiCorp's Atlas](https://atlas.hashicorp.com/)).
+[Vagrant](https://www.vagrantup.com/) image catalog (like [HashiCorp's Atlas](https://atlas.hashicorp.com/)).
 
 ## The problem
 
