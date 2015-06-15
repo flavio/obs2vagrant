@@ -65,25 +65,14 @@ The configuration file is a json file like the following one:
   "address" : "127.0.0.1",
   "port": 8080,
   "servers" : {
-    "obs" : {
-      "download_url": "http://download.opensuse.org/repositories/",
-      "api_url": "https://api.opensuse.org",
-      "user": "flavio",
-      "password": "this is a secret"
-    },
-    "ibs" : {
-      "download_url": "http://download.suse.de/ibs/",
-      "api_url" : "https://api.suse.de",
-      "user": "flavio_castelli",
-      "password": "this is a secret"
-    }
+    "obs" : "http://download.opensuse.org/repositories/",
+    "ibs" : "http://download.suse.de/ibs/"
   }
 }
 ```
 
 The following configuration defines two different server: "`obs`" and "`ibs`".
-Each server has its pair of credentials, a dedicated download url and the url
-exposing the public API.
+Each server must specify the root url for downloads.
 
 ## Example
 
@@ -96,11 +85,8 @@ First of all you must add a server entry inside of your configuration file:
 "servers" : {
   "address" : "127.0.0.1",
   "port": 8080,
-   "ibs" : {
-    "download_url": "http://download.suse.de/ibs/",
-    "api_url" : "https://api.suse.de",
-    "user": "flavio_castelli",
-    "password": "this is a secret"
+  "servers" : {
+    "ibs" : "http://download.suse.de/ibs/"
   }
 }
 ```

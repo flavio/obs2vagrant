@@ -6,16 +6,9 @@ import (
 )
 
 type Config struct {
-	Address string               `json:"address"`
-	Port    int                  `json:"port"`
-	Servers map[string]OBSServer `json:"servers"`
-}
-
-type OBSServer struct {
-	ApiUrl      string `json:"api_url"`
-	DownloadUrl string `json:"download_url"`
-	User        string `json:"user"`
-	Password    string `json:"password"`
+	Address string            `json:"address"`
+	Port    int               `json:"port"`
+	Servers map[string]string `json:"servers"`
 }
 
 func readConfig(config *Config, path string) error {

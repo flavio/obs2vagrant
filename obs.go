@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"net/url"
+	"regexp"
 	"strings"
 )
 
@@ -59,76 +59,60 @@ type Provider struct {
 	Name string `json:"name"`
 }
 
-func obsGetRequest(server OBSServer, request string) ([]byte, *appError) {
-	var data []byte
-	client := &http.Client{}
-	remote_url := server.ApiUrl + request
-	req, err := http.NewRequest("GET", remote_url, nil)
-	if err != nil {
-		return data, &appError{err, 500}
-	}
-	auth := url.UserPassword(server.User, server.Password)
-	req.URL.User = auth
+func findBoxJSONFile(server string, project string, repository string, name string) (string, *appError) {
+	pattern := "href=\"(" + name + "[\\w\\d-.]+-Build[\\w\\d-.]+\\.json)\">"
+	re := regexp.MustCompile(pattern)
 
-	res, err := client.Do(req)
+	indexUrl := server + strings.Replace(project+"/"+repository, ":", ":/", -1)
+	resp, err := http.Get(indexUrl)
 	if err != nil {
-		return data, &appError{err, 500}
+		return "", &appError{err, 500}
 	}
-	if res.StatusCode != 200 {
-		return data,
-			&appError{fmt.Errorf("GET %s returned %s", remote_url, res.Status), res.StatusCode}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return "",
+			&appError{fmt.Errorf("GET %s failed with %s", indexUrl, resp.Status), resp.StatusCode}
 	}
 
-	data, err = ioutil.ReadAll(res.Body)
-	res.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return data, &appError{err, 500}
-	}
-	return data, nil
-}
-
-func getPublishedBinaries(server OBSServer, project string, repository string) (OBSBinaries, *appError) {
-	binaries := OBSBinaries{}
-	data, appErr := obsGetRequest(server, "/published/"+project+"/"+repository)
-	if appErr != nil {
-		return binaries, appErr
+		return "", &appError{err, 500}
 	}
 
-	err := xml.Unmarshal(data, &binaries)
-	if err != nil {
-		return binaries, &appError{err, 500}
+	matches := re.FindAllStringSubmatch(string(body), -1)
+	if len(matches) == 0 {
+		log.Printf("Cannot find box inside of %s", body)
+		return "", &appError{fmt.Errorf("Cannot find box"), 404}
+	} else if len(matches) > 2 {
+		log.Printf("Found more than 2 matches: %+v", matches)
+		return "", &appError{fmt.Errorf("Found multiple matches"), 400}
 	} else {
-		return binaries, nil
+		return matches[0][1], nil
 	}
 }
 
-func findBox(box string, binaries OBSBinaries) (string, string) {
-	var boxFile, jsonFile string
-	for _, entry := range binaries.Entries {
-		if strings.Contains(entry.Name, box) {
-			if strings.HasSuffix(entry.Name, ".box") {
-				boxFile = entry.Name
-			} else if strings.HasSuffix(entry.Name, ".json") {
-				jsonFile = entry.Name
-			}
-		}
-	}
-
-	if boxFile == "" || jsonFile == "" {
-		log.Printf("[findBox] looking for box %s inside of %+v\n", box, binaries)
-	}
-
-	return boxFile, jsonFile
-}
-
-func getBoxJSON(server OBSServer, project string, repository string, jsonFile string) (BoxJSON, *appError) {
+func getBoxJSON(server string, project string, repository string, jsonFile string) (BoxJSON, *appError) {
 	boxJSON := BoxJSON{}
-	data, appErr := obsGetRequest(server, "/published/"+project+"/"+repository+"/"+jsonFile)
-	if appErr != nil {
-		return boxJSON, appErr
+
+	indexUrl := server + strings.Replace(project+"/"+repository, ":", ":/", -1) + "/" + jsonFile
+	resp, err := http.Get(indexUrl)
+	if err != nil {
+		return boxJSON, &appError{err, 500}
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return boxJSON,
+			&appError{fmt.Errorf("GET %s failed with %s", indexUrl, resp.Status), resp.StatusCode}
 	}
 
-	err := json.Unmarshal(data, &boxJSON)
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return boxJSON, &appError{err, 500}
+	}
+
+	err = json.Unmarshal(body, &boxJSON)
 	if err != nil {
 		return boxJSON, &appError{err, 500}
 	} else {

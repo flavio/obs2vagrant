@@ -17,28 +17,21 @@ func boxHandler(w http.ResponseWriter, request *http.Request) {
 	box := vars["box"]
 
 	server := config.Servers[serverName]
-	emptyServer := OBSServer{}
 
-	if server == emptyServer {
+	if server == "" {
 		log.Printf("ERROR: Cannot find %s server inside of configuration file\n", server)
 		http.Error(w, "Error 400: bad request - unknown server", 400)
 		return
 	}
 
-	binaries, appErr := getPublishedBinaries(server, project, repository)
+	jsonFileName, appErr := findBoxJSONFile(server, project, repository, box)
 	if appErr != nil {
 		log.Printf("ERROR: %s\n", appErr.Error)
 		http.Error(w, http.StatusText(appErr.Code), appErr.Code)
 		return
 	}
-	boxFile, jsonFile := findBox(box, binaries)
-	if boxFile == "" || jsonFile == "" {
-		log.Println("ERROR: box not found")
-		http.NotFound(w, request)
-		return
-	}
 
-	jsonBox, appErr := getBoxJSON(server, project, repository, jsonFile)
+	jsonBox, appErr := getBoxJSON(server, project, repository, jsonFileName)
 	if appErr != nil {
 		log.Printf("ERROR: %s\n", appErr.Error)
 		http.Error(w, http.StatusText(appErr.Code), appErr.Code)
@@ -49,7 +42,7 @@ func boxHandler(w http.ResponseWriter, request *http.Request) {
 		version := &jsonBox.Versions[i]
 		for j := range version.Providers {
 			provider := &version.Providers[j]
-			provider.Url = server.DownloadUrl + strings.Replace(project, ":", ":/", -1) + "/" + repository + "/" + provider.Url
+			provider.Url = server + strings.Replace(project, ":", ":/", -1) + "/" + repository + "/" + provider.Url
 		}
 	}
 
