@@ -29,6 +29,8 @@ By default versioning works only when the box is registered on
 achieve the same functionality by pointing Vagrant to a specially crafted json
 file. This is exatly what `obs2vagrant` does.
 
+**Note well:** OBS hosts only latest version of the box.
+
 ## How obs2vagrant works
 
 obs2vagrant is a small web application creating the special json files requested
@@ -39,7 +41,7 @@ obs2vagrant does not use any database, it just uses some really simple conventio
 
 To obtain the special json file just make a `GET` request against:
 
-  `<server>/<project>/<repository>/<box_name>.json`
+  `/<server>/<project>/<repository>/<box_name>.json`
 
 Where:
   * `server` is a unique ID identifying the OBS server instance hosting the box.
@@ -85,9 +87,9 @@ exposing the public API.
 
 ## Example
 
-Suppose you want to use the "Base-SLES12-btrfs" Vagrant box built on a private
-OBS instance inside of the "Devel:Docker:Images:KVM:SLE-12" project. The project
-builds the boxes inside of the repository named "images".
+Suppose you want to use the "`Base-SLES12-btrfs`" Vagrant box built on a private
+OBS instance inside of the "`Devel:Docker:Images:KVM:SLE-12`" project. The project
+builds the boxes inside of the repository named "`images`".
 
 First of all you must add a server entry inside of your configuration file:
 ```json
@@ -131,4 +133,6 @@ To run it:
 
 `obs2vagrant -c obs2vagrant.json`
 
+## TODO
 
+Code coverage.
