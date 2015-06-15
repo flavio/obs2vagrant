@@ -1,0 +1,18 @@
+{
+  "address" : "127.0.0.1",
+  "port": 8080,
+  "servers" : {
+    "obs" : {
+      "download_url": "http://download.opensuse.org/repositories/",
+      "api_url": "https://api.opensuse.org",
+      "user": "username",
+      "password": "password"
+    },
+    "ibs" : {
+      "download_url": "http://download.suse.de/ibs/",
+      "api_url" : "https://api.suse.de",
+      "user": "username",
+      "password": "password"
+    }
+  }
+}
