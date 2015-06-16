@@ -1,0 +1,11 @@
+[Unit]
+Description=obs2vagrant service
+Documentation=https://github.com/flavio/obs2vagrant
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/obs2vagrant -c /etc/obs2vagrant.json
+
+[Install]
+WantedBy=multi-user.target
+
