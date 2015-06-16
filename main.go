@@ -2,13 +2,18 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"net/http"
-	"strconv"
 
+	"github.com/codegangsta/negroni"
 	"github.com/gorilla/mux"
-	"github.com/justinas/alice"
 )
+
+// Returns the "Not found" response.
+func notFound(w http.ResponseWriter, req *http.Request) {
+	http.Error(w, "Error 404: Not Found", http.StatusNotFound)
+}
 
 func main() {
 	var configFile string
@@ -21,13 +26,13 @@ func main() {
 		log.Fatalf("Error while parsing configuration file: %s", err)
 	}
 
-	commonHandlers := alice.New(loggingHandler, recoverHandler)
-
+	n := negroni.New(negroni.NewRecovery(), negroni.NewLogger())
 	r := mux.NewRouter()
-	r.Handle("/{server}/{project}/{repo}/{box}.json", commonHandlers.ThenFunc(boxHandler))
-	http.Handle("/", r)
+	r.NotFoundHandler = http.HandlerFunc(notFound)
+	r.HandleFunc("/{server}/{project}/{repo}/{box}.json", boxHandler).
+		Methods("GET")
+	n.UseHandler(r)
 
-	listenOn := config.Address + ":" + strconv.FormatInt(int64(config.Port), 10)
-	log.Printf("Listening on %s", listenOn)
-	http.ListenAndServe(listenOn, nil)
+	listenOn := fmt.Sprintf("%v:%v", config.Address, config.Port)
+	n.Run(listenOn)
 }
