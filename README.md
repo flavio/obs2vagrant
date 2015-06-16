@@ -50,8 +50,8 @@ Where:
   * `repository` is the name of the repository on OBS.
   * `box_name` is the name of the box, omit all version numbers.
 
-The json file is created using the information obtained talking with
-the OBS server using the [official OBS API](https://api.opensuse.org/apidocs/).
+The json file is created using the information obtained by looking at the
+files published inside of OBS's repository.
 
 ## Configuration file
 
