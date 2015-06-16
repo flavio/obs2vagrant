@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/flavio/obs2vagrant.svg?branch=master)](https://travis-ci.org/flavio/obs2vagrant)
+[![GoDoc](https://godoc.org/github.com/flavio/obs2vagrant?status.png)](https://godoc.org/github.com/flavio/obs2vagrant)
+
 # OBS2Vagrant
 
 OBS2Vagrant is a simple web service that makes possible to turn a
