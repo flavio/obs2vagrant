@@ -2,27 +2,21 @@ package main
 
 import (
 	"flag"
-	"github.com/gorilla/mux"
-	"github.com/justinas/alice"
 	"log"
 	"net/http"
 	"strconv"
+
+	"github.com/gorilla/mux"
+	"github.com/justinas/alice"
 )
 
-var config *Config
-var configFile string
-
-func init() {
-	const (
-		defaultConfigFile = "obs2vagrant.json"
-	)
-	flag.StringVar(&configFile, "c", defaultConfigFile, "configuration file")
-}
-
 func main() {
+	var configFile string
+	const defaultConfigFile = "obs2vagrant.json"
+	flag.StringVar(&configFile, "c", defaultConfigFile, "configuration file")
 	flag.Parse()
-	config = new(Config)
-	err := readConfig(config, configFile)
+
+	err := readConfig(configFile)
 	if err != nil {
 		log.Fatalf("Error while parsing configuration file: %s", err)
 	}
