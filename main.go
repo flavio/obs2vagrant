@@ -1,3 +1,5 @@
+// This is a simple web application that makes possible to use Open Build
+// Service as a simple Vagrant image catalog.
 package main
 
 import (
