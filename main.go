@@ -12,7 +12,10 @@ import (
 
 // Returns the "Not found" response.
 func notFound(w http.ResponseWriter, req *http.Request) {
-	http.Error(w, "Error 404: Not Found", http.StatusNotFound)
+	writeError(w, errorResponse{
+		Error: "Not Found",
+		Code:  http.StatusNotFound,
+	})
 }
 
 func main() {

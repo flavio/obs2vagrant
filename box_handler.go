@@ -3,10 +3,11 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 	"strings"
+
+	"github.com/gorilla/mux"
 )
 
 func boxHandler(w http.ResponseWriter, request *http.Request) {
@@ -20,21 +21,22 @@ func boxHandler(w http.ResponseWriter, request *http.Request) {
 
 	if server == "" {
 		log.Printf("ERROR: Cannot find %s server inside of configuration file\n", server)
-		http.Error(w, "Error 400: bad request - unknown server", 400)
+		writeError(w, errorResponse{
+			Error: "Bad Request: Unknown server",
+			Code:  http.StatusBadRequest,
+		})
 		return
 	}
 
 	jsonFileName, appErr := findBoxJSONFile(server, project, repository, box)
 	if appErr != nil {
-		log.Printf("ERROR: %s\n", appErr.Error)
-		http.Error(w, http.StatusText(appErr.Code), appErr.Code)
+		appErr.Write(w)
 		return
 	}
 
 	jsonBox, appErr := getBoxJSON(server, project, repository, jsonFileName)
 	if appErr != nil {
-		log.Printf("ERROR: %s\n", appErr.Error)
-		http.Error(w, http.StatusText(appErr.Code), appErr.Code)
+		appErr.Write(w)
 		return
 	}
 
@@ -49,7 +51,10 @@ func boxHandler(w http.ResponseWriter, request *http.Request) {
 	jsonData, err := json.Marshal(jsonBox)
 	if err != nil {
 		log.Printf("ERROR: %s\n", err)
-		http.Error(w, http.StatusText(500), 500)
+		writeError(w, errorResponse{
+			Error: "Internal Server Error",
+			Code:  http.StatusInternalServerError,
+		})
 	} else {
 		w.Header().Set("Content-Type", "application/json")
 		fmt.Fprintf(w, "%s", jsonData)
