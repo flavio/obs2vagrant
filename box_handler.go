@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strings"
 
 	"github.com/gorilla/mux"
 )
@@ -17,7 +16,7 @@ func boxHandler(w http.ResponseWriter, request *http.Request) {
 	repository := vars["repo"]
 	box := vars["box"]
 
-	server := config.Servers[serverName]
+	server := cfg.Servers[serverName]
 
 	if server == "" {
 		log.Printf("ERROR: Cannot find %s server inside of configuration file\n", server)

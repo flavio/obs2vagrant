@@ -17,19 +17,19 @@ func TestReadConfig(t *testing.T) {
 		t.Fatalf("It should be ok")
 	}
 
-	if config.Address != "127.0.0.1" {
+	if cfg.Address != "127.0.0.1" {
 		t.Fatalf("Wrong address")
 	}
-	if config.Port != 8080 {
+	if cfg.Port != 8080 {
 		t.Fatalf("Wrong port")
 	}
-	if len(config.Servers) != 2 {
+	if len(cfg.Servers) != 2 {
 		t.Fatalf("Wrong numbers of servers")
 	}
-	if config.Servers["obs"] != "http://download.opensuse.org/repositories/" {
+	if cfg.Servers["obs"] != "http://download.opensuse.org/repositories/" {
 		t.Fatalf("Wrong config for obs")
 	}
-	if config.Servers["ibs"] != "http://download.suse.de/ibs/" {
+	if cfg.Servers["ibs"] != "http://download.suse.de/ibs/" {
 		t.Fatalf("Wrong config for ibs")
 	}
 }
