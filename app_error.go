@@ -10,7 +10,7 @@ import (
 // This is the error to be used when interacting with clients.
 type errorResponse struct {
 	Error string `json:"error"`
-	Code  int    `json:"code"`
+	Code  int    `json:"-"`
 }
 
 // Concatenate this response by marshalling it into JSON.

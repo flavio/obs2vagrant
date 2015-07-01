@@ -1,0 +1,15 @@
+{
+  "description" : "Base SLES12 btrfs box for testing docker",
+  "versions" : [
+    {
+      "version" : "1.12.1",
+      "providers" : [
+        {
+          "url" : "Base-SLES12-btrfs.x86_64-1.12.1.libvirt-Build2.1.box",
+          "name" : "libvirt"
+        }
+      ]
+    }
+  ],
+  "name" : "Base-SLES12-btrfs"
+}

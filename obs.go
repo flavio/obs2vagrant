@@ -2,120 +2,52 @@ package main
 
 import (
 	"encoding/json"
-	"encoding/xml"
-	"fmt"
-	"io/ioutil"
 	"log"
-	"net/http"
 	"regexp"
-	"strings"
 )
 
-//<directory>
-//  <entry name="Base-SLES12-btrfs.x86_64-1.12.1.libvirt-Build2.1.box" />
-//  <entry name="Base-SLES12-btrfs.x86_64-1.12.1.libvirt-Build2.1.json" />
-//  <entry name="Base-SLES12-ext4.x86_64-1.12.1.libvirt-Build11.1.box" />
-//  <entry name="Base-SLES12-ext4.x86_64-1.12.1.libvirt-Build11.1.json" />
-//</directory>
-
-type Entry struct {
-	XMLName xml.Name `xml:entry`
-	Name    string   `xml:"name,attr"`
-}
-
-type OBSBinaries struct {
-	XMLName xml.Name `xml:directory`
-	Entries []Entry  `xml:"entry"`
-}
-
-//{
-//   "description" : "            Base SLES12 btrfs box for testing docker        ",
-//   "versions" : [
-//      {
-//         "version" : "1.12.1",
-//         "providers" : [
-//            {
-//               "url" : "Base-SLES12-btrfs.x86_64-1.12.1.libvirt-Build2.1.box",
-//               "name" : "libvirt"
-//            }
-//         ]
-//      }
-//   ],
-//   "name" : "Base-SLES12-btrfs"
-//}
-type BoxJSON struct {
-	Description string    `json:"description"`
-	Versions    []Version `json:"versions"`
-	Name        string    `json:"name"`
-}
-
-type Version struct {
-	Version   string     `json:"version"`
-	Providers []Provider `json:"providers"`
-}
-
-type Provider struct {
+type provider struct {
 	Url  string `json:"url"`
 	Name string `json:"name"`
 }
 
-func findBoxJSONFile(server string, project string, repository string, name string) (string, *errorResponse) {
+type version struct {
+	Version   string     `json:"version"`
+	Providers []provider `json:"providers"`
+}
+
+type boxJSON struct {
+	Description string    `json:"description"`
+	Versions    []version `json:"versions"`
+	Name        string    `json:"name"`
+}
+
+func findBoxJSONFile(url, name string) (string, *errorResponse) {
+	body, err := getRequest(url)
+	if err != nil {
+		return "", err
+	}
+
 	pattern := "href=\"(" + name + "[\\w\\d-.]+-Build[\\w\\d-.]+\\.json)\">"
 	re := regexp.MustCompile(pattern)
+	matches := re.FindAllStringSubmatch(string(body), 1)
 
-	indexUrl := server + strings.Replace(project+"/"+repository, ":", ":/", -1)
-	resp, err := http.Get(indexUrl)
-	if err != nil {
-		return "", &errorResponse{err.Error(), 500}
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != 200 {
-		return "",
-			&errorResponse{fmt.Sprintf("GET %s failed with %s", indexUrl, resp.Status), resp.StatusCode}
-	}
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return "", &errorResponse{err.Error(), 500}
-	}
-
-	matches := re.FindAllStringSubmatch(string(body), -1)
 	if len(matches) == 0 {
 		log.Printf("Cannot find box inside of %s", body)
 		return "", &errorResponse{"Cannot find box", 404}
-	} else if len(matches) > 2 {
-		log.Printf("Found more than 2 matches: %+v", matches)
-		return "", &errorResponse{"Found multiple matches", 400}
-	} else {
-		return matches[0][1], nil
 	}
+	return matches[0][1], nil
 }
 
-func getBoxJSON(server string, project string, repository string, jsonFile string) (BoxJSON, *errorResponse) {
-	boxJSON := BoxJSON{}
+func getBoxJSON(url string) (boxJSON, *errorResponse) {
+	box := boxJSON{}
 
-	indexUrl := server + strings.Replace(project+"/"+repository, ":", ":/", -1) + "/" + jsonFile
-	resp, err := http.Get(indexUrl)
+	body, err := getRequest(url)
 	if err != nil {
-		return boxJSON, &errorResponse{err.Error(), 500}
+		return box, err
 	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != 200 {
-		return boxJSON,
-			&errorResponse{fmt.Sprintf("GET %s failed with %s", indexUrl, resp.Status), resp.StatusCode}
+	if e := json.Unmarshal(body, &box); e != nil {
+		return box, &errorResponse{e.Error(), 500}
 	}
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return boxJSON, &errorResponse{err.Error(), 500}
-	}
-
-	err = json.Unmarshal(body, &boxJSON)
-	if err != nil {
-		return boxJSON, &errorResponse{err.Error(), 500}
-	} else {
-		return boxJSON, nil
-	}
+	return box, nil
 }

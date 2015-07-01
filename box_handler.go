@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strings"
 
 	"github.com/gorilla/mux"
 )
@@ -17,7 +16,7 @@ func boxHandler(w http.ResponseWriter, request *http.Request) {
 	repository := vars["repo"]
 	box := vars["box"]
 
-	server := config.Servers[serverName]
+	server := cfg.Servers[serverName]
 
 	if server == "" {
 		log.Printf("ERROR: Cannot find %s server inside of configuration file\n", server)
@@ -28,13 +27,15 @@ func boxHandler(w http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	jsonFileName, appErr := findBoxJSONFile(server, project, repository, box)
+	url := buildUrl(server, project, repository, "")
+	jsonFileName, appErr := findBoxJSONFile(url, box)
 	if appErr != nil {
 		appErr.Write(w)
 		return
 	}
 
-	jsonBox, appErr := getBoxJSON(server, project, repository, jsonFileName)
+	url = buildUrl(server, project, repository, jsonFileName)
+	jsonBox, appErr := getBoxJSON(url)
 	if appErr != nil {
 		appErr.Write(w)
 		return
@@ -44,7 +45,7 @@ func boxHandler(w http.ResponseWriter, request *http.Request) {
 		version := &jsonBox.Versions[i]
 		for j := range version.Providers {
 			provider := &version.Providers[j]
-			provider.Url = server + strings.Replace(project, ":", ":/", -1) + "/" + repository + "/" + provider.Url
+			provider.Url = buildUrl(server, project, repository, provider.Url)
 		}
 	}
 

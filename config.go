@@ -5,13 +5,13 @@ import (
 	"os"
 )
 
-type Config struct {
+type config struct {
 	Address string            `json:"address"`
 	Port    int               `json:"port"`
 	Servers map[string]string `json:"servers"`
 }
 
-var config Config
+var cfg config
 
 func readConfig(path string) error {
 	file, err := os.Open(path)
@@ -21,6 +21,6 @@ func readConfig(path string) error {
 	defer file.Close()
 
 	dec := json.NewDecoder(file)
-	err = dec.Decode(&config)
+	err = dec.Decode(&cfg)
 	return err
 }

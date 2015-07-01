@@ -38,6 +38,6 @@ func main() {
 		Methods("GET")
 	n.UseHandler(r)
 
-	listenOn := fmt.Sprintf("%v:%v", config.Address, config.Port)
+	listenOn := fmt.Sprintf("%v:%v", cfg.Address, cfg.Port)
 	n.Run(listenOn)
 }
