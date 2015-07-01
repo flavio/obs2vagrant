@@ -30,15 +30,11 @@ func findBoxJSONFile(url, name string) (string, *errorResponse) {
 
 	pattern := "href=\"(" + name + "[\\w\\d-.]+-Build[\\w\\d-.]+\\.json)\">"
 	re := regexp.MustCompile(pattern)
-	matches := re.FindAllStringSubmatch(string(body), -1)
+	matches := re.FindAllStringSubmatch(string(body), 1)
 
 	if len(matches) == 0 {
 		log.Printf("Cannot find box inside of %s", body)
 		return "", &errorResponse{"Cannot find box", 404}
-	}
-	if len(matches) > 2 {
-		log.Printf("Found more than 2 matches: %+v", matches)
-		return "", &errorResponse{"Found multiple matches", 400}
 	}
 	return matches[0][1], nil
 }
@@ -50,7 +46,7 @@ func getBoxJSON(url string) (boxJSON, *errorResponse) {
 	if err != nil {
 		return box, err
 	}
-	if e := json.Unmarshal(body, &box); err != nil {
+	if e := json.Unmarshal(body, &box); e != nil {
 		return box, &errorResponse{e.Error(), 500}
 	}
 	return box, nil
