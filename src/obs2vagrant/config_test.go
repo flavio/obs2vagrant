@@ -12,7 +12,7 @@ func TestFailReadConfig(t *testing.T) {
 }
 
 func TestReadConfig(t *testing.T) {
-	err := readConfig("obs2vagrant.json.example")
+	err := readConfig("../../obs2vagrant.json.example")
 	if err != nil {
 		t.Fatalf("It should be ok")
 	}
