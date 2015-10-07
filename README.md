@@ -113,7 +113,7 @@ end
 
 ## Bulding & running
 
-obs2vagrant is written using Go.
+obs2vagrant is written using Go and is built using [gb](http://getgb.io/).
 
 Just do:
 ```
