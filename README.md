@@ -116,7 +116,10 @@ end
 obs2vagrant is written using Go.
 
 Just do:
-`go install github.com/flavio/obs2vagrant`
+```
+go get github.com/constabulary/gb/...
+gb build
+```
 
 To run it:
 
