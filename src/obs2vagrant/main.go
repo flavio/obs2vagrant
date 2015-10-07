@@ -35,7 +35,7 @@ func main() {
 	r := mux.NewRouter()
 	r.NotFoundHandler = http.HandlerFunc(notFound)
 	r.HandleFunc("/{server}/{project}/{repo}/{box}.json", boxHandler).
-		Methods("GET")
+		Methods("GET", "HEAD")
 	n.UseHandler(r)
 
 	listenOn := fmt.Sprintf("%v:%v", cfg.Address, cfg.Port)
