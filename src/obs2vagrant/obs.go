@@ -49,5 +49,29 @@ func getBoxJSON(url string) (boxJSON, *errorResponse) {
 	if e := json.Unmarshal(body, &box); e != nil {
 		return box, &errorResponse{e.Error(), 500}
 	}
+
+	buildRev := getBuildRev(url)
+	if buildRev == "" {
+		return box, nil
+	}
+
+	for i := range box.Versions {
+		version := &box.Versions[i]
+		// version and build rev must be joined with a '.' otherwise
+		// vagrant won't work
+		version.Version = version.Version + "." + buildRev
+	}
 	return box, nil
+}
+
+func getBuildRev(url string) string {
+	pattern := "[\\w\\d-.]+-Build([\\w\\d-.]+)\\.json"
+	re := regexp.MustCompile(pattern)
+	matches := re.FindAllStringSubmatch(url, 1)
+
+	if len(matches) == 0 {
+		log.Printf("Cannot find box revision inside of %s", url)
+		return ""
+	}
+	return matches[0][1]
 }
